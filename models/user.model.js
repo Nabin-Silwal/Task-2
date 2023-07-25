@@ -3,8 +3,29 @@ const mongoose = require("mongoose");
 const User = mongoose.model(
   "User",
   new mongoose.Schema({
-    name: { type: String, required: true },
-    wallets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' }],
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    contact: {
+      type: String,
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other'],
+    },
+    age: {
+      type: Number,
+    },
   })
 );
 
