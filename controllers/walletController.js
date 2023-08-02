@@ -1,12 +1,23 @@
-// controllers/walletController.js
 const Wallet = require('../models/wallet.model');
 
-// Add wallet address for a user
+
 const addWallet = async (req, res) => {
-  const { address } = req.body;
+  const { walletId, address } = req.body;
+
+  // Check if the walletId is null or not provided
+  if (!walletId) {
+    return res.status(400).json({ error: 'WalletId is required' });
+  }
 
   try {
-    let wallet = new Wallet({
+    // Check if the walletId already exists for the user
+    let wallet = await Wallet.findOne({ walletId, user: req.user.id });
+    if (wallet) {
+      return res.status(400).json({ error: 'Wallet address already exists for this user' });
+    }
+
+    wallet = new Wallet({
+      walletId,
       address,
       user: req.user.id,
     });
@@ -19,6 +30,8 @@ const addWallet = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+
 
 // Get all wallet addresses for a user
 const getWallets = async (req, res) => {
@@ -33,28 +46,56 @@ const getWallets = async (req, res) => {
 };
 
 // Update wallet address for a user
+// const updateWallet = async (req, res) => {
+//   const { walletId, address } = req.body;
+
+//   try {
+//     let wallet = await Wallet.findOneAndUpdate(
+//       { walletId, user: req.user.id },
+//       { address },
+//       { new: true }
+//     );
+
+//     res.json(wallet);
+//   } catch (error) {
+//     console.error('Error updating wallet address:', error.message);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// };
+
 const updateWallet = async (req, res) => {
-  const { address } = req.body;
+  const { walletId, address } = req.body;
 
   try {
-    let wallet = await Wallet.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      { address },
-      { new: true }
-    );
+    // Find the wallet to update based on walletId and user ID
+    const walletToUpdate = await Wallet.findOne({
+      walletId: req.params.id,
+      user: req.user.id,
+    });
 
-    res.json(wallet);
+    if (!walletToUpdate) {
+      return res.status(404).json({ error: 'Wallet address not found or unauthorized' });
+    }
+
+    // Update the walletId and address
+    walletToUpdate.walletId = walletId;
+    walletToUpdate.address = address;
+    await walletToUpdate.save();
+
+    res.json({ message: 'Wallet address updated successfully', wallet: walletToUpdate });
   } catch (error) {
     console.error('Error updating wallet address:', error.message);
     res.status(500).json({ error: 'Server error' });
   }
 };
 
+
+
 // Delete wallet address for a user
 const deleteWallet = async (req, res) => {
   try {
     await Wallet.findOneAndDelete({
-      _id: req.params.id,
+      walletId: req.params.id,
       user: req.user.id,
     });
 

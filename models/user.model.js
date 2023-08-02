@@ -24,7 +24,11 @@ const User = mongoose.model(
       enum: ['male', 'female', 'other'],
     },
     age: {
+      type: String,
+    },
+    tokenVersion: {
       type: Number,
+      default: 0,
     },
   })
 );

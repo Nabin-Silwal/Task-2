@@ -13,6 +13,12 @@ const authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded.user;
+
+    // Check if the token version in the payload matches the user's token version
+    if (decoded.user.tokenVersion !== req.user.tokenVersion) {
+      throw new Error('Token version mismatch');
+    }
+
     next();
   } catch (error) {
     console.error('Error verifying token:', error.message);
